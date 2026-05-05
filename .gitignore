@@ -1,0 +1,26 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+.env
+.venv/
+venv.bak/
+
+# Project specific
+json_storage/
+downloaded_files/
+nfe_page.html
+nfe_detalhada.html
+NFE_teste.md
+# SeleniumBase
+.seleniumbase/
+*.webp
+*.png
+
+# VSCode / IDEs
+.vscode/
+.idea/
+*.swp
