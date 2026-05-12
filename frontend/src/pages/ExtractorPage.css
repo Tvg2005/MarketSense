@@ -1,0 +1,26 @@
+.extractor-page {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.ext-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.ext-header h1 {
+  font-size: 1.5rem;
+  color: #e0e0e0;
+}
+
+.ext-back {
+  color: #6366f1;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.ext-back:hover { text-decoration: underline; }

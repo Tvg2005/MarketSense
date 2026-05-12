@@ -1,0 +1,125 @@
+.qr-scanner {
+  margin-bottom: 1.5rem;
+}
+
+.upload-zone {
+  border: 2px dashed #1e1e30;
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #12121e;
+}
+
+.upload-zone:hover {
+  border-color: #6366f1;
+  background: #15152a;
+}
+
+.upload-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.upload-text {
+  color: #999;
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+}
+
+.upload-hint {
+  color: #555;
+  font-size: 0.8rem;
+}
+
+.preview-area {
+  margin-top: 1.2rem;
+  text-align: center;
+}
+
+.preview-area img {
+  max-width: 220px;
+  max-height: 220px;
+  border-radius: 12px;
+  border: 1px solid #1e1e30;
+}
+
+.qr-status {
+  margin-top: 1rem;
+  padding: 0.8rem 1.2rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.qr-status.processing {
+  background: #111827;
+  border-left: 3px solid #3b82f6;
+  color: #93c5fd;
+}
+
+.qr-status.success {
+  background: #0f1f0f;
+  border-left: 3px solid #22c55e;
+  color: #86efac;
+}
+
+.qr-status.error {
+  background: #1f0f0f;
+  border-left: 3px solid #ef4444;
+  color: #fca5a5;
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.fallback-box {
+  margin-top: 1rem;
+  padding: 1.2rem;
+  background: #12121e;
+  border: 1px solid #1e1e30;
+  border-radius: 12px;
+}
+
+.fallback-box p {
+  color: #888;
+  font-size: 0.85rem;
+  margin-bottom: 0.8rem;
+}
+
+.fallback-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.btn-ghost {
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  border: 1px solid #1e1e30;
+  background: #1a1a2e;
+  color: #ccc;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-ghost:hover {
+  border-color: #6366f1;
+  background: #1e1e3a;
+  color: white;
+}

@@ -8,17 +8,22 @@ env/
 .env
 .venv/
 venv.bak/
-
+trash/
+.kiro/
+TestAssets/
 # Project specific
 json_storage/
 downloaded_files/
 nfe_page.html
 nfe_detalhada.html
-NFE_teste.md
 # SeleniumBase
 .seleniumbase/
 *.webp
 *.png
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
 
 # VSCode / IDEs
 .vscode/

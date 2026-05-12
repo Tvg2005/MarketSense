@@ -1,0 +1,100 @@
+.dashboard {
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.dash-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6366f1, #a78bfa);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dash-email {
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+}
+
+.dash-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.dash-btn {
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.dash-btn:hover { opacity: 0.85; }
+.dash-btn.secondary { background: #1a1a2e; border: 1px solid #2a2a3e; }
+.dash-btn.secondary:hover { border-color: #6366f1; }
+.dash-btn.logout { background: #1f0f0f; border: 1px solid #3a1a1a; color: #fca5a5; }
+
+.dash-content h2 {
+  font-size: 1.1rem;
+  color: #e0e0e0;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.dash-loading { color: #666; }
+
+.dash-empty {
+  text-align: center;
+  padding: 3rem;
+  color: #555;
+}
+
+.dash-empty .dash-btn { margin-top: 1rem; display: inline-block; }
+
+.notas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nota-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 1.2rem;
+  background: #12121e;
+  border: 1px solid #1e1e30;
+  border-radius: 12px;
+  transition: border-color 0.15s;
+}
+
+.nota-card:hover { border-color: #2a2a40; }
+
+.nota-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.nota-emitente { font-size: 0.9rem; color: #e0e0e0; }
+.nota-data { font-size: 0.8rem; color: #666; }
+.nota-valor { font-size: 1rem; font-weight: 600; color: #22c55e; }

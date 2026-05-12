@@ -1,0 +1,112 @@
+.result-panel {
+  background: #12121e;
+  border: 1px solid #1e1e30;
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.result-panel h2 {
+  font-size: 1.1rem;
+  color: #e0e0e0;
+  margin-bottom: 1.2rem;
+  font-weight: 600;
+}
+
+.produtos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.produto-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  background: #0a0a12;
+  border-radius: 10px;
+  border: 1px solid #1a1a28;
+  transition: border-color 0.15s;
+}
+
+.produto-row:hover {
+  border-color: #2a2a40;
+}
+
+.produto-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.produto-nome {
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.produto-codigo {
+  font-size: 0.75rem;
+  color: #555;
+  flex-shrink: 0;
+}
+
+.produto-preco {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #22c55e;
+  white-space: nowrap;
+  margin-left: 1rem;
+}
+
+.meta-section {
+  margin-top: 1.5rem;
+}
+
+.meta-section h3 {
+  font-size: 0.9rem;
+  color: #a78bfa;
+  margin-bottom: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+@media (max-width: 600px) {
+  .meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.meta-cell {
+  padding: 0.5rem 0.7rem;
+  background: #0a0a12;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.meta-label {
+  font-size: 0.72rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.meta-value {
+  font-size: 0.85rem;
+  color: #e0e0e0;
+  font-weight: 500;
+}

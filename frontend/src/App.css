@@ -1,0 +1,127 @@
+.container {
+  width: 100%;
+  max-width: 820px;
+}
+
+.header h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6366f1, #a78bfa);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.4rem;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #1e1e30;
+  background: #12121e;
+}
+
+.tab {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  background: transparent;
+  color: #777;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.tab:not(:last-child) {
+  border-right: 1px solid #1e1e30;
+}
+
+.tab.active {
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  color: white;
+}
+
+.tab:hover:not(.active) {
+  background: #1a1a2e;
+  color: #aaa;
+}
+
+/* Manual input */
+.manual-input {
+  margin-bottom: 1.5rem;
+}
+
+.input-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.input-row input {
+  flex: 1;
+  padding: 0.9rem 1.2rem;
+  border-radius: 12px;
+  border: 1px solid #1e1e30;
+  background: #12121e;
+  color: #e0e0e0;
+  font-size: 1rem;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  letter-spacing: 1px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-row input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.input-row input::placeholder {
+  font-family: 'Segoe UI', sans-serif;
+  letter-spacing: normal;
+  color: #444;
+}
+
+.input-row input:disabled {
+  opacity: 0.5;
+}
+
+.chave-counter {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #555;
+  text-align: right;
+}
+
+.btn-primary {
+  padding: 0.9rem 2rem;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
