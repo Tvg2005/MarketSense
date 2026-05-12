@@ -19,7 +19,16 @@ def _json_serializer(obj):
     return json.dumps(obj, ensure_ascii=False)
 
 
-engine = create_engine(DATABASE_URL, echo=False, json_serializer=_json_serializer)
+engine = create_engine(
+    DATABASE_URL,
+    echo=False,
+    json_serializer=_json_serializer,
+    pool_size=5,
+    max_overflow=10,
+    pool_timeout=30,
+    pool_recycle=1800,
+    pool_pre_ping=True,
+)
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
 
@@ -59,11 +68,31 @@ class Nota(Base):
     users = relationship("User", secondary="users_notas", back_populates="notas")
 
 
+class CatalogoProduto(Base):
+    """Catálogo canônico de produtos — chave interna unificada."""
+    __tablename__ = "catalogo_produtos"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ean = Column(String(20), unique=True, nullable=True, index=True)
+    descricao_canonica = Column(String(255), nullable=False)
+    unidade = Column(String(10))
+    ncm = Column(String(10))
+    criado_em = Column(DateTime, default=datetime.utcnow)
+    atualizado_em = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    produtos = relationship("Produto", back_populates="catalogo")
+
+    __table_args__ = (
+        Index("ix_catalogo_unidade_descricao", "unidade", "descricao_canonica"),
+    )
+
+
 class Produto(Base):
     __tablename__ = "produtos"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     nota_chave = Column(String(44), ForeignKey("notas.chave_acesso"), nullable=False)
+    catalogo_id = Column(Integer, ForeignKey("catalogo_produtos.id"), nullable=True, index=True)
     ean = Column(String(20), index=True)
     codigo_produto = Column(String(50))
     descricao = Column(String(255))
@@ -73,9 +102,10 @@ class Produto(Base):
     quantidade = Column(Float)
     valor_unitario = Column(Float)
     valor_total = Column(Float)
-    dados_tributarios = Column(JSON)  # ICMS, IBS, CBS, etc.
+    dados_tributarios = Column(JSON)
 
     nota = relationship("Nota", back_populates="produtos")
+    catalogo = relationship("CatalogoProduto", back_populates="produtos")
 
     __table_args__ = (
         Index("ix_produto_ean_nota", "ean", "nota_chave"),
@@ -105,6 +135,14 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
+    nome = Column(String(255))
+    cep = Column(String(10))
+    endereco = Column(String(500))
+    numero = Column(String(20))
+    complemento = Column(String(255))
+    bairro = Column(String(100))
+    cidade = Column(String(100))
+    uf = Column(String(2))
     criado_em = Column(DateTime, default=datetime.utcnow)
 
     notas = relationship("Nota", secondary="users_notas", back_populates="users")

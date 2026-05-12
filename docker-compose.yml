@@ -1,17 +1,19 @@
+name: market_sense
+
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: nfe_postgres
+    container_name: market_sense_pg
     environment:
-      POSTGRES_DB: nfe_analyser
-      POSTGRES_USER: nfe_user
-      POSTGRES_PASSWORD: nfe_dev
+      POSTGRES_DB: market_sense
+      POSTGRES_USER: market_sense_dev_user
+      POSTGRES_PASSWORD: market_sense_dev_pass
     ports:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nfe_user -d nfe_analyser"]
+      test: ["CMD-SHELL", "pg_isready -U market_sense_dev_user -d market_sense"]
       interval: 5s
       timeout: 3s
       retries: 5

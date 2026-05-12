@@ -36,7 +36,18 @@ def register():
 
         # Cria usuário
         password_hash = generate_password_hash(password, rounds=12).decode('utf-8')
-        user = User(email=email, password_hash=password_hash)
+        user = User(
+            email=email,
+            password_hash=password_hash,
+            nome=data.get('nome', '').strip(),
+            cep=data.get('cep', '').strip(),
+            endereco=data.get('endereco', '').strip(),
+            numero=data.get('numero', '').strip(),
+            complemento=data.get('complemento', '').strip(),
+            bairro=data.get('bairro', '').strip(),
+            cidade=data.get('cidade', '').strip(),
+            uf=data.get('uf', '').strip(),
+        )
         session.add(user)
         session.commit()
 

@@ -1,6 +1,7 @@
 """Serviço de persistência: salva os dados extraídos da NFC-e no PostgreSQL."""
 
 from models import SessionLocal, Emitente, Nota, Produto, PrecoHistorico, UserNota
+from catalogo_service import vincular_ao_catalogo
 from datetime import datetime
 import re
 import json
@@ -100,6 +101,17 @@ def salvar_nota_completa(dados_json, user_id=None):
 
         nota_existente = session.get(Nota, chave_acesso)
         if nota_existente:
+            # Nota já existe, mas ainda precisa vincular ao usuário
+            if user_id:
+                existing_link = (
+                    session.query(UserNota)
+                    .filter_by(user_id=int(user_id), nota_chave=chave_acesso)
+                    .first()
+                )
+                if not existing_link:
+                    user_nota = UserNota(user_id=int(user_id), nota_chave=chave_acesso)
+                    session.add(user_nota)
+                    session.commit()
             session.close()
             return chave_acesso
 
@@ -141,14 +153,23 @@ def salvar_nota_completa(dados_json, user_id=None):
             }
             dados_trib = {k: v for k, v in prod.items() if k not in campos_principais}
 
+            # Vincular ao catálogo interno
+            ean_prod = prod.get("Código EAN Comercial", ean_key)
+            desc_prod = prod.get("Descrição", "")
+            unidade_prod = prod.get("Unidade Comercial", "")
+            ncm_prod = prod.get("Código NCM", "")
+
+            catalogo_id = vincular_ao_catalogo(session, ean_prod, desc_prod, unidade_prod, ncm_prod)
+
             produto = Produto(
                 nota_chave=chave_acesso,
-                ean=prod.get("Código EAN Comercial", ean_key),
+                catalogo_id=catalogo_id,
+                ean=ean_prod,
                 codigo_produto=prod.get("Código do produto", ""),
-                descricao=prod.get("Descrição", ""),
-                ncm=prod.get("Código NCM", ""),
+                descricao=desc_prod,
+                ncm=ncm_prod,
                 cfop=prod.get("CFOP", ""),
-                unidade=prod.get("Unidade Comercial", ""),
+                unidade=unidade_prod,
                 quantidade=quantidade,
                 valor_unitario=valor_unitario,
                 valor_total=valor_total_prod,
@@ -158,8 +179,8 @@ def salvar_nota_completa(dados_json, user_id=None):
 
             # 4. Histórico de preços
             preco = PrecoHistorico(
-                ean=prod.get("Código EAN Comercial", ean_key),
-                descricao=prod.get("Descrição", ""),
+                ean=ean_prod if (ean_prod and ean_prod.upper() != 'SEM GTIN') else f"CAT-{catalogo_id}",
+                descricao=desc_prod,
                 emitente_cnpj=cnpj,
                 data=data_emissao or datetime.utcnow(),
                 valor_unitario=valor_unitario,

@@ -31,6 +31,9 @@ jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+# Rastreia sessões ativas para cancelamento em caso de disconnect
+_active_extractions = {}  # sid -> {"cancelled": bool}
+
 # Register blueprints
 from auth_routes import auth_bp
 from me_routes import me_bp
@@ -186,18 +189,24 @@ def decodificar_qr():
         return jsonify({'sucesso': False, 'erro': f'Erro ao processar imagem: {str(e)}'}), 500
 
 
-def emitir_status(sid, mensagem, tipo='info'):
+def emitir_status(sid, mensagem, tipo='info', debug_only=False):
     """Emite uma atualização de status para o cliente via WebSocket."""
+    if debug_only and os.getenv("LOG_LEVEL", "").lower() != "debug":
+        return
     socketio.emit('status_update', {'mensagem': mensagem, 'tipo': tipo}, to=sid)
 
 
 def extrair_dados_nfe_async(url, sid, user_id=None):
     """Executa a extração em uma thread separada, emitindo status via socket."""
+    def is_cancelled():
+        return _active_extractions.get(sid, {}).get("cancelled", False)
+
     try:
-        emitir_status(sid, '🚀 Iniciando o navegador anti-detecção...', 'info')
+        emitir_status(sid, 'Iniciando navegador...', 'info', debug_only=True)
+        emitir_status(sid, 'Conectando ao portal da SEFAZ...', 'info')
 
         with SB(uc=True, headless=True) as sb:
-            emitir_status(sid, '🌐 Acessando a URL da nota fiscal...', 'info')
+            emitir_status(sid, 'Acessando nota fiscal...', 'info', debug_only=True)
             sb.uc_open_with_reconnect(url, reconnect_time=4)
 
             try:
@@ -205,17 +214,23 @@ def extrair_dados_nfe_async(url, sid, user_id=None):
             except:
                 pass
 
-            emitir_status(sid, '⏳ Aguardando validação do Cloudflare...', 'info')
+            emitir_status(sid, 'Validando acesso ao portal...', 'info', debug_only=True)
             sb.sleep(4)
+
+            if is_cancelled():
+                return
 
             botao_continuar = 'input.btn.btn-primary[type="submit"]'
 
             if sb.is_element_visible(botao_continuar):
-                emitir_status(sid, '✅ Captcha validado! Clicando em "Continuar consulta"...', 'success')
+                emitir_status(sid, 'Validação concluída', 'success', debug_only=True)
                 sb.click(botao_continuar)
                 sb.sleep(6)
+
+                if is_cancelled():
+                    return
             else:
-                emitir_status(sid, '⚠️ Botão não visível, tentando continuar...', 'warning')
+                emitir_status(sid, 'Aguardando liberação do portal...', 'info', debug_only=True)
 
             html = sb.get_page_source()
 
@@ -227,14 +242,14 @@ def extrair_dados_nfe_async(url, sid, user_id=None):
             lista_produtos = soup.find('ul', class_='list-group')
 
             if not lista_produtos:
-                emitir_status(sid, '❌ Produtos não encontrados. Estrutura do HTML inesperada.', 'error')
+                emitir_status(sid, 'Não foi possível acessar os dados da nota fiscal. Tente novamente.', 'error')
                 socketio.emit('extracao_finalizada', {'sucesso': False}, to=sid)
                 return
 
-            emitir_status(sid, '📦 Nota fiscal acessada! Extraindo produtos...', 'success')
+            emitir_status(sid, 'Nota fiscal localizada. Extraindo produtos...', 'info')
 
             itens = lista_produtos.find_all('li', class_='list-group-item')
-            emitir_status(sid, f'📋 {len(itens)} produtos encontrados na nota.', 'info')
+            emitir_status(sid, f'{len(itens)} produtos identificados', 'info', debug_only=True)
 
             produtos_extraidos = []
             for item in itens:
@@ -268,22 +283,25 @@ def extrair_dados_nfe_async(url, sid, user_id=None):
                 with open('json_storage/produtos_extraidos.json', 'w', encoding='utf-8') as f:
                     json.dump(produtos_extraidos, f, ensure_ascii=False, indent=4)
 
-            emitir_status(sid, '💾 Produtos extraídos! Buscando página detalhada...', 'success')
+            emitir_status(sid, 'Buscando dados detalhados da nota...', 'info')
 
             botao_detalhada = "a.btn-success"
             if sb.is_element_present(botao_detalhada):
                 link_detalhada = sb.get_attribute(botao_detalhada, "href")
                 if link_detalhada:
-                    emitir_status(sid, '🔍 Acessando NFC-e Detalhada...', 'info')
+                    emitir_status(sid, 'Acessando detalhamento completo...', 'info', debug_only=True)
                     sb.uc_open_with_reconnect(link_detalhada, reconnect_time=4)
                     sb.sleep(5)
+
+                    if is_cancelled():
+                        return
 
                     html_detalhada = sb.get_page_source()
                     if os.getenv("LOG_LEVEL", "").lower() == "debug":
                         with open("nfe_detalhada.html", "w", encoding="utf-8") as f:
                             f.write(html_detalhada)
 
-                    emitir_status(sid, '📊 Extraindo metadados detalhados...', 'info')
+                    emitir_status(sid, 'Processando metadados...', 'info', debug_only=True)
                     soup_det = BeautifulSoup(html_detalhada, 'html.parser')
                     dados_completos = extrair_metadados_detalhados(soup_det)
 
@@ -293,29 +311,29 @@ def extrair_dados_nfe_async(url, sid, user_id=None):
                             json.dump(dados_completos, f, ensure_ascii=False, indent=4)
 
                     # Salvar no banco de dados
-                    emitir_status(sid, '🗄️ Salvando no banco de dados...', 'info')
+                    emitir_status(sid, 'Salvando dados...', 'info')
                     try:
                         from db_service import salvar_nota_completa
                         chave = salvar_nota_completa(dados_completos, user_id=user_id)
-                        emitir_status(sid, f'💾 Nota {chave[:8]}... salva no banco!', 'success')
+                        emitir_status(sid, f'Nota {chave[:8]}... persistida', 'success', debug_only=True)
                     except Exception as db_err:
-                        emitir_status(sid, f'⚠️ Erro ao salvar no banco: {str(db_err)}', 'warning')
+                        emitir_status(sid, f'Falha ao persistir: {str(db_err)}', 'warning', debug_only=True)
 
-                    emitir_status(sid, '✅ Extração completa! Todos os dados foram salvos.', 'success')
+                    emitir_status(sid, 'Extração concluída com sucesso', 'success')
                     socketio.emit('extracao_finalizada', {
                         'sucesso': True,
                         'produtos': produtos_extraidos,
                         'metadados': dados_completos
                     }, to=sid)
                 else:
-                    emitir_status(sid, '⚠️ Link da página detalhada não encontrado.', 'warning')
+                    emitir_status(sid, 'Dados parciais extraídos. Detalhamento indisponível.', 'warning')
                     socketio.emit('extracao_finalizada', {
                         'sucesso': True,
                         'produtos': produtos_extraidos,
                         'metadados': {}
                     }, to=sid)
             else:
-                emitir_status(sid, '⚠️ Botão "Visualizar NFC-e Detalhada" não encontrado.', 'warning')
+                emitir_status(sid, 'Dados parciais extraídos. Detalhamento indisponível.', 'warning')
                 socketio.emit('extracao_finalizada', {
                     'sucesso': True,
                     'produtos': produtos_extraidos,
@@ -323,8 +341,11 @@ def extrair_dados_nfe_async(url, sid, user_id=None):
                 }, to=sid)
 
     except Exception as e:
-        emitir_status(sid, f'❌ Erro durante a extração: {str(e)}', 'error')
+        emitir_status(sid, f'Erro na extração. Tente novamente.', 'error')
+        emitir_status(sid, f'Detalhe: {str(e)}', 'error', debug_only=True)
         socketio.emit('extracao_finalizada', {'sucesso': False}, to=sid)
+    finally:
+        _active_extractions.pop(sid, None)
 
 
 def extrair_metadados_detalhados(soup_det):
@@ -425,30 +446,44 @@ def handle_extracao(data):
     token = data.get('token', '')
 
     if not entrada:
-        emit('status_update', {'mensagem': '❌ Chave de acesso não fornecida.', 'tipo': 'error'})
+        emit('status_update', {'mensagem': 'Chave de acesso não fornecida.', 'tipo': 'error'})
         return
 
     url = montar_url_nfe(entrada)
     if not url:
-        emit('status_update', {'mensagem': '❌ Chave inválida. Informe os 44 dígitos da nota fiscal.', 'tipo': 'error'})
+        emit('status_update', {'mensagem': 'Chave inválida. Informe os 44 dígitos da nota fiscal.', 'tipo': 'error'})
         return
 
     # Extrair user_id do JWT se fornecido
     user_id = None
     if token:
         try:
-            from flask_jwt_extended import decode_token
-            decoded = decode_token(token)
+            import jwt as pyjwt
+            clean_token = token.replace('Bearer ', '') if token.startswith('Bearer ') else token
+            secret = app.config.get('JWT_SECRET_KEY', 'jwt-dev-secret')
+            decoded = pyjwt.decode(clean_token, secret, algorithms=["HS256"])
             user_id = decoded.get('sub')
-        except Exception:
-            pass
+        except Exception as e:
+            if os.getenv("LOG_LEVEL", "").lower() == "debug":
+                print(f"[WARN] Falha ao decodificar token: {e}")
+    else:
+        if os.getenv("LOG_LEVEL", "").lower() == "debug":
+            print("[WARN] Nenhum token recebido no socket emit")
 
     sid = request.sid
-    emit('status_update', {'mensagem': '🔄 Extração iniciada...', 'tipo': 'info'})
+    _active_extractions[sid] = {"cancelled": False}
+    emit('status_update', {'mensagem': 'Extração iniciada...', 'tipo': 'info'})
 
     thread = threading.Thread(target=extrair_dados_nfe_async, args=(url, sid, user_id))
     thread.daemon = True
     thread.start()
+
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    sid = request.sid
+    if sid in _active_extractions:
+        _active_extractions[sid]["cancelled"] = True
 
 
 if __name__ == '__main__':
