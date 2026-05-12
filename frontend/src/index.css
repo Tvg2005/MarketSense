@@ -1,3 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Cores base */
+  --color-primary: #14B8A6;
+  --color-primary-light: #DCFCE7;
+  --color-success: #22C55E;
+  --color-warning: #EAB308;
+  --color-error: #EF4444;
+
+  /* Dark theme (padrão) */
+  --bg-deep: #0D1B2A;
+  --bg-surface: #1B263B;
+  --bg-card: #1B263B;
+  --bg-hover: #253548;
+  --border: #2A3A4E;
+  --text-primary: #FFFFFF;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --sidebar-bg: #0D1B2A;
+  --sidebar-active: rgba(20, 184, 166, 0.1);
+  --sidebar-border: #1E3048;
+}
+
+[data-theme="light"] {
+  --bg-deep: #F1F5F9;
+  --bg-surface: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-hover: #F8FAFC;
+  --border: #E2E8F0;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --sidebar-bg: #FFFFFF;
+  --sidebar-active: rgba(20, 184, 166, 0.08);
+  --sidebar-border: #E2E8F0;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -5,16 +43,16 @@
 }
 
 body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: #0a0a12;
-  color: #e0e0e0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
 #root {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem;
 }
+
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; }

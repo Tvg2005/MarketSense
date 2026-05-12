@@ -1,13 +1,12 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { io } from 'socket.io-client'
 import { useAuth } from '../contexts/AuthContext'
+import { Keyboard, Camera } from 'lucide-react'
 import QRScanner from '../components/QRScanner.jsx'
 import StatusPanel from '../components/StatusPanel.jsx'
 import ResultPanel from '../components/ResultPanel.jsx'
 import './ExtractorPage.css'
-
-const socket = io('/', { transports: ['websocket', 'polling'] })
 
 function ExtractorPage() {
   const { token } = useAuth()
@@ -16,8 +15,12 @@ function ExtractorPage() {
   const [extraindo, setExtraindo] = useState(false)
   const [statusList, setStatusList] = useState([])
   const [resultado, setResultado] = useState(null)
+  const socketRef = useRef(null)
 
   useEffect(() => {
+    const socket = io('/', { transports: ['websocket', 'polling'] })
+    socketRef.current = socket
+
     socket.on('status_update', (data) => {
       setStatusList(prev => [...prev, data])
     })
@@ -32,26 +35,28 @@ function ExtractorPage() {
     return () => {
       socket.off('status_update')
       socket.off('extracao_finalizada')
+      socket.disconnect()
     }
   }, [])
 
   const iniciarExtracao = useCallback((chaveInput) => {
     const valor = chaveInput || chave
-    if (!valor.trim()) return
+    if (!valor.trim() || !socketRef.current) return
 
     setExtraindo(true)
     setStatusList([])
     setResultado(null)
-    socket.emit('iniciar_extracao', { chave: valor.trim(), token })
+    socketRef.current.emit('iniciar_extracao', { chave: valor.trim(), token })
   }, [chave, token])
 
   const onQRDetected = useCallback((chaveDetectada) => {
+    if (!socketRef.current) return
     setChave(chaveDetectada)
     setTab('manual')
     setExtraindo(true)
     setStatusList([])
     setResultado(null)
-    socket.emit('iniciar_extracao', { chave: chaveDetectada, token })
+    socketRef.current.emit('iniciar_extracao', { chave: chaveDetectada, token })
   }, [token])
 
   return (
@@ -63,10 +68,10 @@ function ExtractorPage() {
 
       <div className="tabs">
         <button className={`tab ${tab === 'manual' ? 'active' : ''}`} onClick={() => setTab('manual')}>
-          ⌨️ Chave de Acesso
+          <Keyboard size={16} /> Chave de Acesso
         </button>
         <button className={`tab ${tab === 'qrcode' ? 'active' : ''}`} onClick={() => setTab('qrcode')}>
-          📷 QR Code
+          <Camera size={16} /> QR Code
         </button>
       </div>
 

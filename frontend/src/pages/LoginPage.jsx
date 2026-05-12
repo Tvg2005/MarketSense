@@ -15,7 +15,6 @@ function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-
     try {
       await login(email, password)
       navigate('/dashboard')
@@ -29,46 +28,27 @@ function LoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="auth-title">NFE Analyser</h1>
+        <div className="auth-logo">
+          <img src="/logo.png" alt="MarketSense" />
+          <span>Market<b>Sense</b></span>
+        </div>
         <p className="auth-subtitle">Entre na sua conta</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
           {error && <div className="auth-error">{error}</div>}
-
           <div className="form-group">
             <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              required
-              disabled={loading}
-            />
+            <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" required disabled={loading} />
           </div>
-
           <div className="form-group">
             <label htmlFor="password">Senha</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Sua senha"
-              required
-              disabled={loading}
-            />
+            <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Sua senha" required disabled={loading} />
           </div>
-
           <button type="submit" className="auth-btn" disabled={loading}>
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
-
-        <p className="auth-link">
-          Não tem conta? <Link to="/signup">Criar conta</Link>
-        </p>
+        <p className="auth-link">Não tem conta? <Link to="/signup">Criar conta</Link></p>
       </div>
     </div>
   )
