@@ -303,10 +303,17 @@ def delete_produto(current_user_id, produto_id):
 @token_required
 def get_historico_precos(current_user_id):
     """Retorna histórico de preços dos produtos do usuário (dados coletivos)."""
+    from flask import request as flask_request
+    from datetime import timedelta
+
+    dias = int(flask_request.args.get('dias', 90))
+    dias = min(dias, 1095)  # Máximo 3 anos
+
     session = SessionLocal()
     try:
         from models import CatalogoProduto, Emitente
-        from sqlalchemy import and_
+        from datetime import datetime
+        data_inicio = datetime.utcnow() - timedelta(days=dias)
 
         # Produtos do usuário (via catalogo_id)
         user_catalogo_ids = (
@@ -344,6 +351,7 @@ def get_historico_precos(current_user_id):
             .join(Emitente, Emitente.cnpj == Nota.emitente_cnpj)
             .filter(CatalogoProduto.id.in_(user_catalogo_ids))
             .filter(CatalogoProduto.id.in_(catalogo_com_historico))
+            .filter(Nota.data_emissao >= data_inicio)
             .order_by(CatalogoProduto.descricao_canonica, Nota.data_emissao)
             .all()
         )

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { TrendingUp, TrendingDown, Minus, Search } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import PeriodFilter from '../components/PeriodFilter.jsx'
 import './Pages.css'
 import './HistoricoPage.css'
 
@@ -11,17 +12,19 @@ function HistoricoPage() {
   const [loading, setLoading] = useState(true)
   const [busca, setBusca] = useState('')
   const [expandedId, setExpandedId] = useState(null)
+  const [periodo, setPeriodo] = useState(90)
 
   useEffect(() => {
     const fetch = async () => {
+      setLoading(true)
       try {
-        const res = await api.get('/me/historico-precos')
+        const res = await api.get(`/me/historico-precos?dias=${periodo}`)
         setHistorico(res.data.historico || [])
       } catch (err) { console.error(err) }
       finally { setLoading(false) }
     }
     fetch()
-  }, [api])
+  }, [api, periodo])
 
   const filtrado = historico.filter(p =>
     p.descricao.toLowerCase().includes(busca.toLowerCase()) ||
@@ -30,13 +33,16 @@ function HistoricoPage() {
 
   const formatDate = (iso) => {
     if (!iso) return '-'
-    return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+    const d = new Date(iso)
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
   }
 
   return (
     <div className="page">
       <h1 className="page-title">Histórico de Preços</h1>
       <p className="page-subtitle">Evolução dos preços dos seus produtos ao longo do tempo</p>
+
+      <PeriodFilter periodo={periodo} onChange={setPeriodo} />
 
       <div className="search-bar">
         <Search size={16} className="search-icon" />
@@ -92,7 +98,7 @@ function HistoricoPage() {
                     </div>
                     <div className="hc-metric">
                       <span className="hcm-label">Mercados</span>
-                      <span className="hcm-value">{prod.mercados.join(', ')}</span>
+                      <span className="hcm-value">{prod.mercados.length}</span>
                     </div>
                   </div>
 
@@ -105,8 +111,7 @@ function HistoricoPage() {
                         <Tooltip
                           contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8 }}
                           labelStyle={{ color: 'var(--text-secondary)' }}
-                          formatter={(value, name) => [`R$ ${value.toFixed(2).replace('.', ',')}`, 'Preço']}
-                          labelFormatter={(label) => label}
+                          formatter={(value) => [`R$ ${value.toFixed(2).replace('.', ',')}`, 'Preço']}
                         />
                         <Line type="monotone" dataKey="valor" stroke="var(--color-primary)" strokeWidth={2} dot={{ r: 4, fill: 'var(--color-primary)' }} />
                       </LineChart>

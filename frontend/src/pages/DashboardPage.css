@@ -118,3 +118,10 @@
 .cs-icon-svg { color: var(--text-muted); margin-bottom: 0.75rem; }
 .coming-soon p { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.3rem; }
 .coming-soon small { font-size: 0.8rem; color: var(--text-muted); }
+
+.gastos-chart {
+  padding: 0.5rem;
+  background: var(--bg-deep);
+  border-radius: 10px;
+  margin-top: 0.5rem;
+}
